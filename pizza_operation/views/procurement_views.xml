@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========================================================= -->
+    <!-- PHẦN 1: GIAO DIỆN YÊU CẦU NHẬP NGUYÊN LIỆU (Procurement)  -->
+    <!-- ========================================================= -->
+
+    <!-- 1.1. FORM VIEW (Chi tiết phiếu - ĐÃ PHÂN QUYỀN) -->
+    <record id="view_pizza_procurement_form" model="ir.ui.view">
+        <field name="name">pizza.procurement.request.form</field>
+        <field name="model">pizza.procurement.request</field>
+        <field name="arch" type="xml">
+            <form string="Yêu cầu nhập nguyên liệu">
+                <header>
+                    <!-- 1. Nút Gửi duyệt: Ai cũng thấy -->
+                    <button name="action_confirm" string="Gửi duyệt" type="object" class="oe_highlight" 
+                            invisible="state != 'draft'" data-hotkey="v"/>
+                    
+                    <!-- 2. Nút Phê duyệt: CHỈ QUẢN LÝ -->
+                    <button name="action_approve" string="Phê duyệt" type="object" class="oe_highlight" 
+                            invisible="state != 'confirm'"
+                            groups="pizza_operation.group_pizza_manager" data-hotkey="a"/>
+                    
+                    <!-- 3. Nút Reset: CHỈ QUẢN LÝ -->
+                    <button name="action_draft" string="Điều chỉnh lại (Reset)" type="object" 
+                            invisible="state not in ('confirm', 'approved')"
+                            groups="pizza_operation.group_pizza_manager"/>
+                    
+                    <!-- 4. Nút Tạo PO: CHỈ QUẢN LÝ -->
+                    <button name="action_create_po" string="Tạo Đơn mua hàng (PO)" type="object" class="btn-success" 
+                            invisible="state != 'approved'"
+                            groups="pizza_operation.group_pizza_manager" data-hotkey="q"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_po" type="object" class="oe_stat_button" icon="fa-shopping-cart" invisible="purchase_count == 0">
+                            <field name="purchase_count" widget="statinfo" string="Đơn mua"/>
+                        </button>
+                        <button name="action_view_picking" type="object" class="oe_stat_button" icon="fa-truck" invisible="picking_count == 0">
+                            <field name="picking_count" widget="statinfo" string="Phiếu kho"/>
+                        </button>
+                    </div>
+
+                    <!-- [TRANG TRÍ] Thêm Ribbon trạng thái -->
+                    <widget name="web_ribbon" title="Hoàn tất" bg_color="bg-success" invisible="state != 'done'"/>
+                    <widget name="web_ribbon" title="Chờ duyệt" bg_color="bg-warning" invisible="state != 'confirm'"/>
+
+                    <div class="oe_title">
+                        <label for="name" string="Mã phiếu yêu cầu"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông tin chung">
+                            <field name="requester_id" options="{'no_create': True}" readonly="1"/> 
+                            <field name="vendor_id" 
+                                   readonly="state in ('approved','done')" 
+                                   placeholder="Chọn nhà cung cấp..." 
+                                   options="{'no_create': True}"/>
+                            <field name="warehouse_id" readonly="state == 'done'" groups="base.group_no_one"/>
+                        </group>
+                        <group string="Thời gian">
+                            <field name="date_planned"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Danh sách nguyên liệu">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="product_image" widget="image" options="{'size': [40, 40]}" string="Ảnh" width="50px" optional="show"/>
+                                    <field name="product_id" width="300px" placeholder="Tìm món..." options="{'no_create': True}"/>
+                                    
+                                    <!-- Màu sắc cho loại kho -->
+                                    <field name="storage_category" optional="show" width="110px" widget="badge" 
+                                           decoration-info="storage_category == 'raw'" 
+                                           decoration-primary="storage_category == 'cold'"/>
+                                           
+                                    <field name="qty_on_hand" string="Tồn kho" optional="show" decoration-danger="qty_on_hand &lt; 10"/>
+                                    <field name="qty" string="SL Cần mua" width="120px" style="font-weight: bold; color: #28a745;"/>
+                                    <field name="uom_id" width="90px" options="{'no_open': True, 'no_create': True}"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Ghi chú">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    
+    <!-- 1.2. LIST VIEW (Trang trí màu sắc) -->
+    <record id="view_pizza_procurement_list" model="ir.ui.view">
+        <field name="name">pizza.procurement.request.list</field>
+        <field name="model">pizza.procurement.request</field>
+        <field name="arch" type="xml">
+           
+            <list string="Danh sách yêu cầu" 
+                  decoration-success="state == 'done'" 
+                  decoration-bf="state == 'confirm'"
+                  decoration-info="state == 'draft'">
+                
+                <field name="name"/>
+                <field name="date_planned" widget="date" width="150px"/>
+                <field name="requester_id" widget="many2one_avatar_user"/>
+                <field name="vendor_id" optional="show"/>
+                
+                <field name="state" widget="badge" 
+                       decoration-muted="state == 'draft'"
+                       decoration-warning="state == 'confirm'"
+                       decoration-primary="state == 'approved'"
+                       decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- 1.3. SEARCH VIEW -->
+    <record id="view_pizza_procurement_search" model="ir.ui.view">
+        <field name="name">pizza.procurement.request.search</field>
+        <field name="model">pizza.procurement.request</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm">
+                <field name="name"/>
+                <field name="requester_id"/>
+                
+                <separator/>
+                <filter string="Của tôi" name="my_requests" domain="[('requester_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Đang chờ duyệt" name="waiting_approval" domain="[('state', '=', 'confirm')]"/>
+                <filter string="Chưa hoàn tất" name="not_done" domain="[('state', '!=', 'done')]"/>
+
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Người yêu cầu" name="group_user" context="{'group_by': 'requester_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- 1.4. ACTION -->
+    <record id="action_pizza_procurement_request" model="ir.actions.act_window">
+        <field name="name">Yêu cầu nhập nguyên liệu</field>
+        <field name="res_model">pizza.procurement.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_group_state': 1}</field> 
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo phiếu yêu cầu nhập hàng mới!
+            </p>
+        </field>
+    </record>
+
+    <!-- PHẦN 2: QUẢN LÝ NHÀ CUNG CẤP -->
+    <record id="action_pizza_vendor_list" model="ir.actions.act_window">
+        <field name="name">Quản lý Nhà cung cấp</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'default_supplier_rank': 1, 'search_default_supplier': 1}</field>
+    </record>
+
+</odoo>

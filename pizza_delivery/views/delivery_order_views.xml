@@ -1,0 +1,160 @@
+<odoo>
+    <!-- 1. List View (Danh sách) -->
+    <record id="view_pizza_delivery_list" model="ir.ui.view">
+        <field name="name">pizza.delivery.list</field>
+        <field name="model">pizza.delivery.order</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'done'" 
+                  decoration-danger="state == 'fail'" 
+                  decoration-muted="state == 'cancel'">
+                
+                <field name="name"/>
+                <field name="date_created"/>
+                <field name="customer_id"/>
+                <field name="address"/>
+                <field name="route_id" optional="show"/>
+                <field name="driver_id" widget="many2one_avatar_user"/>
+                <field name="priority" widget="priority"/>
+                <field name="amount_cod" widget="monetary" decoration-bf="1" decoration-danger="amount_cod &gt; 0"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'assigned'" 
+                       decoration-warning="state == 'shipping'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- 2. Form View (Chi tiết) -->
+    <record id="view_pizza_delivery_form" model="ir.ui.view">
+        <field name="name">pizza.delivery.form</field>
+        <field name="model">pizza.delivery.order</field>
+        <field name="arch" type="xml">
+            <form string="Phiếu Giao Hàng">
+                <header>
+                    <!-- 1. Nút cho QUẢN LÝ gán xe -->
+                    <button name="action_assign" string="Điều phối xe" type="object" class="oe_highlight" 
+                            invisible="state != 'draft'"
+                            groups="pizza_delivery.group_pizza_delivery_manager"/>
+                    
+                    <!-- 2. Nút cho TÀI XẾ tự nhận đơn -->
+                    <button name="action_driver_take_order" 
+                            string="✋ Tôi nhận đơn này" 
+                            type="object" 
+                            class="btn-primary" 
+                            invisible="driver_id != False or state != 'draft'"/>
+
+                    <!-- 3. Nút Bắt đầu giao -->
+                    <button name="action_start_ship" string="Bắt đầu giao" type="object" class="oe_highlight" 
+                            invisible="state != 'assigned'"/>
+                    
+                    <!-- 4. Nút Hoàn tất / Thất bại -->
+                    <button name="action_confirm_done" string="Xác nhận thành công" type="object" class="btn-success" 
+                            invisible="state != 'shipping'"/>
+                    
+                    <button name="action_fail" string="Giao thất bại" type="object" class="btn-danger" 
+                            invisible="state != 'shipping'"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,assigned,shipping,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông tin chính">
+                            <field name="sales_order_id" readonly="1"/>
+                            <field name="customer_id" readonly="1"/>
+                            <field name="address" readonly="1"/>
+                            
+                            <field name="route_id" 
+                                   options="{'no_create': True, 'no_open': True}" 
+                                   groups="pizza_delivery.group_pizza_delivery_manager"/> 
+                            
+                            <field name="route_id" 
+                                   options="{'no_create': True, 'no_open': True}" 
+                                   readonly="1" 
+                                   groups="!pizza_delivery.group_pizza_delivery_manager"/> 
+                            
+                            <field name="available_driver_ids" invisible="1"/>
+                            <field name="priority" widget="priority" readonly="1"/>
+                        </group>
+                        <group string="Vận chuyển &amp; COD">
+                            <field name="driver_id" 
+                                   widget="many2one_avatar" 
+                                   options="{'no_create': True}"
+                                   domain="[('id', 'in', available_driver_ids)]"
+                                   groups="pizza_delivery.group_pizza_delivery_manager"/>
+
+                            <field name="driver_id" 
+                                   widget="many2one_avatar" 
+                                   readonly="1"
+                                   groups="!pizza_delivery.group_pizza_delivery_manager"/>
+                                   
+                            <field name="date_created" readonly="1"/>
+                            <field name="amount_cod" widget="monetary" readonly="1" force_save="1" style="font-weight: bold; color: #dc3545;"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Bằng chứng giao hàng (POD)" invisible="state == 'draft'">
+                            <group>
+                                <field name="proof_photo" widget="image" options="{'size': [150, 150]}" readonly="state == 'done'"/>
+                                <field name="customer_signature" widget="signature" readonly="state == 'done'"/>
+                                <field name="fail_reason" invisible="state != 'fail'" readonly="state != 'fail'"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- 3. Kanban View -->
+    <record id="view_pizza_delivery_kanban" model="ir.ui.view">
+        <field name="name">pizza.delivery.kanban</field>
+        <field name="model">pizza.delivery.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column" sample="1" records_draggable="false">
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="driver_id"/>
+                <field name="priority"/>
+                <field name="amount_cod"/>
+                <field name="state"/>
+                <field name="route_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click">
+                            <div class="o_kanban_record_top">
+                                <strong class="o_kanban_record_title"><field name="name"/></strong>
+                                <span class="float-right text-right"><field name="priority" widget="priority"/></span>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div><i class="fa fa-user"/> <field name="customer_id"/></div>
+                                <div t-if="record.route_id.raw_value" class="text-muted"><i class="fa fa-map-marker"/> <field name="route_id"/></div>
+                                <div t-if="record.amount_cod.raw_value > 0" class="text-danger font-weight-bold"><i class="fa fa-money"/> Thu hộ: <field name="amount_cod" widget="monetary"/></div>
+                                <div t-else="" class="text-success"><i class="fa fa-check-circle"/> Đã thanh toán</div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left"><field name="driver_id" widget="many2one_avatar_user"/></div>
+                                <div class="oe_kanban_bottom_right"><field name="state" widget="label_selection" options="{'classes': {'draft': 'default', 'assigned': 'info', 'shipping': 'warning', 'done': 'success', 'fail': 'danger'}}"/></div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- 4. Action -->
+    <record id="action_pizza_delivery" model="ir.actions.act_window">
+        <field name="name">Trung tâm Điều phối</field>
+        <field name="res_model">pizza.delivery.order</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Hiện tại chưa có đơn hàng nào!
+            </p>
+        </field>
+    </record>
+</odoo>

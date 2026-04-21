@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pizza_sales_order_inherit_delivery" model="ir.ui.view">
+        <field name="name">pizza.sales.order.form.inherit.delivery</field>
+        <field name="model">pizza.sales.order</field>
+        <field name="inherit_id" ref="pizza_operation.view_pizza_sales_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- Smart Button -->
+            <xpath expr="//div[@class='oe_title']" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_deliveries" 
+                            type="object" 
+                            class="oe_stat_button" 
+                            icon="fa-truck"
+                            invisible="delivery_count == 0">
+                        <field name="delivery_count" widget="statinfo" string="Giao vận"/>
+                    </button>
+                </div>
+            </xpath>
+
+            <!-- Nút Gọi Ship Thủ Công -->
+            <!-- Chỉ hiện khi: Đã thanh toán (paid) VÀ Chưa có phiếu giao hàng nào -->
+            <!-- Ẩn khi: Đang giao (delivering) hoặc Đã xong (done) -->
+            <xpath expr="//header" position="inside">
+                <button name="action_create_delivery" 
+                        string="Tạo phiếu Giao lại" 
+                        type="object" 
+                        class="btn-secondary"
+                        invisible="state != 'paid' or delivery_count > 0"/>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. FORM VIEW (Popup nhập lý do) -->
+    <record id="view_pizza_scrap_form" model="ir.ui.view">
+        <field name="name">pizza.scrap.record.form</field>
+        <field name="model">pizza.scrap.record</field>
+        <field name="arch" type="xml">
+            <!-- [QUAN TRỌNG] create="0" delete="0" edit="0"
+                 Mục đích: Form này chỉ dùng để TẠO MỚI (qua nút bấm), 
+                 không cho phép sửa/xóa sau khi đã lưu để đảm bảo tính trung thực.
+            -->
+            <form string="Báo cáo Hủy/Lỗi" create="0" delete="0" edit="0">
+                <sheet>
+                    <div class="oe_title text-center">
+                        <h2 class="text-danger">
+                            <field name="reason" readonly="0" widget="radio" options="{'horizontal': true}"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Chi tiết">
+                            <field name="product_id" widget="many2one_avatar" options="{'no_open': True, 'no_create': True}"/>
+                            <label for="qty" string="Số lượng"/>
+                            <div class="o_row">
+                                <field name="qty"/>
+                                <field name="uom_id" class="fw-bold"/>
+                            </div>
+                        </group>
+                        <group string="Nguồn gốc">
+                            <field name="production_id" readonly="1" options="{'no_open': True}"/>
+                            <!-- [MỚI] Hiển thị người tạo để truy trách nhiệm -->
+                            <field name="create_uid" readonly="1" widget="many2one_avatar_user"/>
+                            <field name="create_date" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="Mô tả sự cố"/>
+                    <field name="note" placeholder="Ví dụ: Bánh bị cháy mặt do lò nhiệt độ cao..." nolabel="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_confirm_scrap" string="Xác nhận Hủy kho" type="object" class="btn-danger" data-hotkey="q"/>
+                    <button string="Hủy bỏ" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- 2. LIST VIEW (Nhật ký) -->
+    <record id="view_pizza_scrap_list" model="ir.ui.view">
+        <field name="name">pizza.scrap.record.list</field>
+        <field name="model">pizza.scrap.record</field>
+        <field name="arch" type="xml">
+            <!-- [PHÂN QUYỀN] 
+                 - delete="0": Không cho xóa trực tiếp trên danh sách (trừ Quản lý vào menu Action)
+                 - create="0": Không cho tạo thủ công từ đây (phải tạo từ Lệnh SX để có nguồn gốc)
+            -->
+            <list string="Lịch sử Hủy/Cháy" default_order="create_date desc" decoration-danger="reason == 'burnt'" create="0" delete="0">
+                <field name="create_date" string="Thời gian"/>
+                <field name="production_id" string="Lệnh SX" widget="many2one" optional="show"/>
+                <field name="product_id" widget="many2one_avatar"/>
+                <field name="qty" sum="Tổng số lượng hủy"/>
+                <field name="uom_id" optional="hide"/>
+                <field name="reason" widget="badge" 
+                       decoration-danger="reason == 'burnt'" 
+                       decoration-warning="reason == 'raw_bad'"
+                       decoration-info="reason == 'accident'"/>
+                <field name="note" optional="hide"/>
+                <field name="create_uid" widget="many2one_avatar_user" string="Người báo cáo"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- 3. SEARCH VIEW -->
+    <record id="view_pizza_scrap_search" model="ir.ui.view">
+        <field name="name">pizza.scrap.record.search</field>
+        <field name="model">pizza.scrap.record</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm lỗi">
+                <!-- A. THANH TÌM KIẾM (Gõ vào để tìm) -->
+                <field name="production_id" string="Mã lệnh SX"/>
+                <field name="product_id" string="Sản phẩm / Món ăn"/>
+                <field name="create_uid" string="Người báo cáo"/>
+                <field name="note" string="Ghi chú" filter_domain="[('note', 'ilike', self)]"/>
+
+                <!-- B. BỘ LỌC NHANH (Filters) -->
+                <separator/>
+                <filter string="Của tôi" name="my_scraps" domain="[('create_uid', '=', uid)]"/>
+                
+                <separator/>
+                <filter string="🔥 Cháy/Hỏng (Burnt)" name="filter_burnt" domain="[('reason', '=', 'burnt')]"/>
+                <filter string="🥬 Nguyên liệu xấu" name="filter_raw" domain="[('reason', '=', 'raw_bad')]"/>
+                <filter string="💥 Tai nạn/Rơi vỡ" name="filter_accident" domain="[('reason', '=', 'accident')]"/>
+                
+                <separator/>
+                <filter string="Hôm nay" name="today" domain="[('create_date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter string="7 ngày qua" name="last_week" domain="[('create_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+
+                <!-- C. NHÓM DỮ LIỆU (Group By) -->
+                <group expand="1" string="Nhóm theo">
+                    <filter string="Lý do hủy" name="group_reason" context="{'group_by': 'reason'}"/>
+                    <filter string="Sản phẩm" name="group_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Người báo cáo" name="group_user" context="{'group_by': 'create_uid'}"/>
+                    <filter string="Ngày tháng" name="group_date" context="{'group_by': 'create_date:day'}"/>
+                    <filter string="Lệnh sản xuất" name="group_mo" context="{'group_by': 'production_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ======================================================== -->
+    <!-- 4. ACTIONS                                               -->
+    <!-- ======================================================== -->
+    
+    <record id="action_pizza_scrap_popup" model="ir.actions.act_window">
+        <field name="name">Báo cáo Hủy/Cháy</field>
+        <field name="res_model">pizza.scrap.record</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_pizza_scrap" model="ir.actions.act_window">
+        <field name="name">Lịch sử Hủy &amp; Phế liệu</field>
+        <field name="res_model">pizza.scrap.record</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_group_reason': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Chưa có dữ liệu hủy hàng nào!
+            </p>
+        </field>
+    </record>
+
+</odoo>

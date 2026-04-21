@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Report Sales -->
+    <record id="view_pizza_report_sales_pivot" model="ir.ui.view">
+        <field name="name">pizza.report.sales.pivot</field>
+        <field name="model">pizza.report.sales</field>
+        <field name="arch" type="xml">
+            <pivot string="Phân tích Bán hàng" sample="1">
+                <field name="date" interval="day" type="row"/>
+                <field name="order_type" type="col"/>
+                <field name="amount" type="measure"/>
+                <field name="qty" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_pizza_report_sales" model="ir.actions.act_window">
+        <field name="name">Báo cáo Doanh thu</field>
+        <field name="res_model">pizza.report.sales</field>
+        <field name="view_mode">pivot,graph</field>
+    </record>
+
+    <!-- 2. Report Production -->
+    <record id="view_pizza_report_production_graph" model="ir.ui.view">
+        <field name="name">pizza.report.production.graph</field>
+        <field name="model">pizza.report.production</field>
+        <field name="arch" type="xml">
+            <graph string="Năng suất Bếp" type="bar">
+                <field name="pizza_id"/>
+                <field name="qty_producing" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_pizza_report_production" model="ir.actions.act_window">
+        <field name="name">Thống kê Sản xuất</field>
+        <field name="res_model">pizza.report.production</field>
+        <field name="view_mode">graph,pivot</field>
+    </record>
+
+    <!-- MENU REPORT -->
+    <menuitem id="menu_pizza_report_root" name="Báo cáo" parent="menu_pizza_root" sequence="99"/>
+    <menuitem id="menu_report_sales" name="Doanh thu" parent="menu_pizza_report_root" action="action_pizza_report_sales"/>
+    <menuitem id="menu_report_production" name="Sản xuất" parent="menu_pizza_report_root" action="action_pizza_report_production"/>
+</odoo>

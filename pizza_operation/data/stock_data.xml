@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Tạo các Location con trong kho mặc định (WH) -->
+        
+        <!-- 1. Kho lạnh -->
+        <record id="loc_cold_storage" model="stock.location">
+            <field name="name">Kho Lạnh (Cold Storage)</field>
+            <field name="usage">internal</field>
+            <field name="location_id" ref="stock.stock_location_stock"/> <!-- Con của WH/Stock -->
+        </record>
+
+        <!-- 2. Nguyên liệu thô -->
+        <record id="loc_raw_material" model="stock.location">
+            <field name="name">Nguyên liệu thô (Raw)</field>
+            <field name="usage">internal</field>
+            <field name="location_id" ref="stock.stock_location_stock"/>
+        </record>
+
+        <!-- 3. Thành phẩm -->
+        <record id="loc_finished_goods" model="stock.location">
+            <field name="name">Thành phẩm (Pizza)</field>
+            <field name="usage">internal</field>
+            <field name="location_id" ref="stock.stock_location_stock"/>
+        </record>
+    </data>
+</odoo>

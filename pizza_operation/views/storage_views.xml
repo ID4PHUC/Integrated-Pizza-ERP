@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. FORM VIEW -->
+    <record id="view_product_template_pizza_storage_form" model="ir.ui.view">
+        <field name="name">product.template.pizza.storage.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+
+            <!-- A. HEADER BUTTONS -->
+            <xpath expr="//header" position="inside">
+                <button name="action_return_to_vendor" string="Trả hàng NCC" type="object" class="btn-secondary" icon="fa-truck" invisible="qty_available == 0 or expired_lot_count > 0" groups="pizza_operation.group_pizza_manager"/>
+
+                <button name="action_return_to_vendor" string="⚠️ Trả hàng Hết hạn" type="object" class="btn-warning" icon="fa-trash" invisible="expired_lot_count == 0" groups="pizza_operation.group_pizza_manager"/>
+
+                <button name="action_destroy_product" string="🔥 HỦY DIỆT SP" type="object" class="btn-danger" icon="fa-bomb" groups="pizza_operation.group_pizza_manager" confirm="CẢNH BÁO: Hành động này sẽ xóa vĩnh viễn sản phẩm!"/>
+            </xpath>
+
+            <!-- B. RIBBON TRẠNG THÁI -->
+            <xpath expr="//sheet" position="before">
+                <!-- Ribbon HẾT HÀNG: Hiện khi số lượng <= 0 -->
+                <widget name="web_ribbon" title="HẾT HÀNG" bg_color="bg-danger" invisible="qty_available &gt; 0"/>
+
+                <!-- Ribbon ĐÃ HỎNG: Hiện khi có lô hết hạn -->
+                <widget name="web_ribbon" title="ĐÃ HỎNG/HẾT DATE" bg_color="bg-dark" invisible="expired_lot_count == 0"/>
+
+                <!-- Ribbon SẮP HỎNG -->
+                <widget name="web_ribbon" title="CẦN KIỂM TRA" bg_color="bg-warning" invisible="qty_available == 0 or expiring_lot_count == 0 or expired_lot_count &gt; 0"/>
+            </xpath>
+
+            <!-- C. SMART BUTTON -->
+            <div name="button_box" position="inside">
+                <button name="action_check_expiry" type="object" class="oe_stat_button" icon="fa-exclamation-triangle" invisible="expiring_lot_count == 0 and expired_lot_count == 0">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="expiring_lot_count"/>
+                        </span>
+                        <span class="o_stat_text" style="color: red; font-weight: bold;">Lô cảnh báo</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- D. TAB INVENTORY -->
+            <xpath expr="//page[@name='inventory']" position="inside">
+                <group string="Quản lý Kho Pizza">
+                    <group>
+                        <field name="storage_category"/>
+                        <field name="last_receipt_date" readonly="1" widget="date"/>
+                        <!-- Cảnh báo ngày kiểm tra -->
+                        <field name="inspection_date" widget="date" decoration-danger="inspection_date &lt; current_date" decoration-warning="is_inspection_warning"/>
+                        <field name="is_inspection_warning" invisible="1"/>
+                    </group>
+
+                    <group string="Cấu hình Hạn dùng (FEFO)" groups="pizza_operation.group_pizza_manager">
+                        <field name="check_expiry"/>
+                        <field name="shelf_life" invisible="not check_expiry"/>
+                        <field name="alert_days" invisible="not check_expiry"/>
+                        <field name="expected_expiry_date" readonly="1"/>
+                    </group>
+
+                    <group string="Thông tin Hạn dùng" groups="pizza_operation.group_pizza_user">
+                        <div class="text-muted" invisible="check_expiry">
+                            <i>Sản phẩm này chưa kích hoạt theo dõi hạn sử dụng.</i>
+                        </div>
+                        <group invisible="not check_expiry">
+                            <field name="expected_expiry_date" readonly="1" string="Ngày hết hạn dự kiến"/>
+                            <field name="expired_lot_count" string="Lô đã hỏng" readonly="1"/>
+                        </group>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- 2. TREE VIEW -->
+    <record id="view_product_template_pizza_storage_tree" model="ir.ui.view">
+        <field name="name">product.template.pizza.storage.tree</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="storage_category" optional="show" widget="badge" decoration-info="storage_category == 'raw'" decoration-primary="storage_category == 'cold'" decoration-success="storage_category == 'finished'"/>
+
+                <!-- Hiển thị Tồn kho ngay trên danh sách -->
+                <field name="qty_available" optional="show" decoration-danger="qty_available == 0" decoration-warning="qty_available &lt; 10"/>
+
+                <field name="inspection_date" optional="show" widget="date" decoration-danger="inspection_date &lt; current_date" decoration-warning="is_inspection_warning"/>
+
+                <field name="is_inspection_warning" column_invisible="1"/>
+                <field name="expiring_lot_count" column_invisible="1"/>
+                <field name="expired_lot_count" column_invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+
+    <!-- 3. SEARCH VIEW-->
+    <record id="view_product_template_pizza_storage_search" model="ir.ui.view">
+        <field name="name">product.template.pizza.storage.search</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <!-- Chèn vào sau trường tìm kiếm tên sản phẩm -->
+            <xpath expr="//field[@name='name']" position="after">
+
+                <!-- 1. NHÓM KHO LƯU TRỮ -->
+                <separator/>
+                <filter string="❄️ Kho Lạnh" name="filter_cold" domain="[('storage_category', '=', 'cold')]"/>
+                <filter string="🌾 Nguyên liệu thô" name="filter_raw" domain="[('storage_category', '=', 'raw')]"/>
+                <filter string="🍕 Thành phẩm Pizza" name="filter_finished" domain="[('storage_category', '=', 'finished')]"/>
+                <filter string="📦 Bao bì / Đóng gói" name="filter_packing" domain="[('storage_category', '=', 'packing')]"/>
+
+                <!-- 2. NHÓM TRẠNG THÁI HẠN DÙNG (FEFO) - Dùng hàm search python đã viết -->
+                <separator/>
+                <filter string="☠️ ĐÃ HẾT HẠN (Lô/Date)" name="filter_expired_real" domain="[('expired_lot_count', '>', 0)]" help="Tìm sản phẩm có Lô hết hạn hoặc Quá ngày kiểm tra"/>
+
+                <filter string="⚠️ SẮP HỎNG (Cần xử lý)" name="filter_expiring_real" domain="[('expiring_lot_count', '>', 0)]" help="Tìm sản phẩm có Lô sắp hết hạn hoặc Sắp tới ngày kiểm tra"/>
+
+                <!-- 3. NHÓM SỐ LƯỢNG TỒN KHO -->
+                <separator/>
+                <filter string="❌ Đã Hết Hàng (Qty=0)" name="filter_out_of_stock" domain="[('qty_available', '&lt;=', 0)]"/>
+                <filter string="📉 Sắp Hết Hàng (Qty&lt;10)" name="filter_low_stock" domain="[('qty_available', '&lt;', 10), ('qty_available', '&gt;', 0)]"/>
+
+                <!-- 4. NHÓM THỜI GIAN KIỂM TRA (Sửa lỗi datetime) -->
+                <separator/>
+                <!-- Lọc các ngày kiểm tra nhỏ hơn ngày hiện tại -->
+                <filter string="📅 Quá hạn kiểm tra (Manual)" name="filter_inspect_overdue" domain="[('inspection_date', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+
+                <!-- Lọc các ngày kiểm tra trong 5 ngày tới (Dùng relativedelta thay vì datetime) -->
+                <filter string="🔍 Kiểm tra trong 5 ngày tới" name="filter_inspect_soon" domain="[('inspection_date', '&lt;=', (context_today() + relativedelta(days=5)).strftime('%Y-%m-%d')), ('inspection_date', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

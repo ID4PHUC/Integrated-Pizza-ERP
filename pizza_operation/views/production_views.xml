@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. FORM VIEW (Giao diện chi tiết) -->
+    <record id="view_pizza_production_form" model="ir.ui.view">
+        <field name="name">pizza.production.order.form</field>
+        <field name="model">pizza.production.order</field>
+        <field name="arch" type="xml">
+            <form string="Lệnh sản xuất Pizza">
+                <header>
+                    <!-- A. NHÓM QUẢN LÝ (Manager Only) -->
+                    <!-- Kiểm tra kho & Yêu cầu mua hàng: Chỉ quản lý mới được quyết định -->
+                    <button name="action_check_stock" string="Kiểm tra Tồn kho" type="object" class="oe_highlight" invisible="state != 'draft'" groups="pizza_operation.group_pizza_manager" data-hotkey="v"/>
+
+                    <button name="action_create_procurement" string="Yêu cầu mua hàng" type="object" invisible="state != 'draft'" groups="pizza_operation.group_pizza_manager" class="btn-secondary"/>
+
+                    <!-- B. NHÓM CHUNG (Ai cũng thấy) -->
+                    <!-- Nhân viên Bếp thấy nút này để bấm khi bắt đầu làm -->
+                    <button name="action_start_cooking" string="Bắt đầu Nướng" type="object" class="oe_highlight" invisible="state != 'confirmed'" data-hotkey="g"/>
+
+                    <!-- C. NHÓM QUẢN LÝ (Kiểm soát chất lượng & Nhập kho) -->
+                    <button name="action_qc_check" string="Kiểm tra QC" type="object" class="oe_highlight" invisible="state != 'progress'" groups="pizza_operation.group_pizza_manager" data-hotkey="q"/>
+
+                    <button name="action_done" string="Nhập kho (Done)" type="object" class="oe_highlight" invisible="state != 'qc_check'" groups="pizza_operation.group_pizza_manager" data-hotkey="d"/>
+
+                    <!-- D. BÁO LỖI (Ai cũng thấy) -->
+                    <!-- Nhân viên Bếp cần nút này để báo bánh cháy -->
+                    <button name="action_scrap" string="Báo Lỗi/Cháy" type="object" class="btn-danger text-white" invisible="state not in ('progress', 'qc_check')"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,progress,qc_check,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Mã Lệnh SX"/>
+                        <h1>
+                            <!-- Nhân viên không được sửa mã lệnh -->
+                            <field name="name" placeholder="Tự động sinh mã..." readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Sản phẩm">
+                            <!-- Khi đã xác nhận, Nhân viên không được đổi loại bánh để tránh sai lệch -->
+                            <field name="pizza_id" widget="many2one_avatar" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="origin" readonly="1" placeholder="VD: Từ đơn SO001..."/>
+                            <field name="qty_producing" readonly="state != 'draft'"/>
+
+                            <!-- Chỉ Quản lý mới được đổi công thức (BOM) -->
+                            <field name="bom_id" options="{'no_create': True}" readonly="state != 'draft'" groups="pizza_operation.group_pizza_manager"/>
+                        </group>
+                        <group string="Kế hoạch">
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="date_planned"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Nguyên liệu (BOM)" name="components">
+                            <!-- Nhân viên chỉ được xem định mức, không được sửa danh sách nguyên liệu -->
+                            <field name="move_raw_ids" readonly="state in ('done','cancel')" widget="section_and_note_one2many">
+                                <list editable="bottom" delete="0">
+                                    <control>
+                                        <!-- CHỈ QUẢN LÝ MỚI ĐƯỢC THÊM NGUYÊN LIỆU NGOÀI LUỒNG -->
+                                        <create name="add_product_control" string="Thêm nguyên liệu (Tùy chỉnh)" groups="pizza_operation.group_pizza_manager"/>
+                                    </control>
+
+                                    <!-- Nhân viên không được sửa tên nguyên liệu, chỉ được nhìn -->
+                                    <field name="product_id" widget="many2one_avatar" options="{'no_create': True}" width="40%" readonly="0"/>
+
+                                    <field name="qty_needed" sum="Tổng định mức" width="20%" decoration-bf="1" readonly="1"/>
+
+                                    <field name="qty_available" width="20%" decoration-danger="qty_available &lt; qty_needed" decoration-success="qty_available &gt;= qty_needed" force_save="1"/>
+                                    <field name="uom_id" string="ĐVT" options="{'no_open': True}" width="10%"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- 2. LIST VIEW (Giữ nguyên) -->
+    <record id="view_pizza_production_list" model="ir.ui.view">
+        <field name="name">pizza.production.order.list</field>
+        <field name="model">pizza.production.order</field>
+        <field name="arch" type="xml">
+            <list string="Lệnh sản xuất" decoration-muted="state == 'cancel'" decoration-info="state == 'draft'">
+                <field name="name" string="Mã lệnh"/>
+                <field name="origin" string="Từ đơn hàng" optional="show"/>
+                <field name="pizza_id" widget="many2one_avatar"/>
+                <field name="qty_producing" string="SL Làm" sum="Tổng SL"/>
+                <field name="uom_id" optional="hide"/>
+                <field name="date_planned" widget="remaining_days" string="Hạn chót"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'confirmed'" decoration-warning="state == 'progress'" decoration-success="state == 'done'" decoration-danger="state == 'qc_check'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- 3. SEARCH VIEW -->
+    <record id="view_pizza_production_search" model="ir.ui.view">
+        <field name="name">pizza.production.order.search</field>
+        <field name="model">pizza.production.order</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm Lệnh sản xuất">
+                <field name="name" string="Mã lệnh"/>
+                <field name="origin" string="Từ đơn hàng (SO)"/>
+                <field name="pizza_id" string="Loại Pizza"/>
+                <field name="user_id" string="Bếp trưởng"/>
+
+                <separator/>
+                <filter string="Của tôi" name="my_orders" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Nháp" name="draft" domain="[('state', '=', 'draft')]"/>
+                <separator/>
+                <filter string="Đang thực hiện" name="in_progress" domain="[('state', 'in', ('confirmed', 'progress', 'qc_check'))]"/>
+                <filter string="Đã hoàn thành" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Đã hủy" name="cancelled" domain="[('state', '=', 'cancel')]"/>
+                <separator/>
+                <filter string="Hôm nay" name="today" domain="[('date_planned', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')), 
+                                 ('date_planned', '&lt;', (context_today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d 00:00:00'))]"/>
+
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Loại Pizza" name="group_pizza" context="{'group_by': 'pizza_id'}"/>
+                    <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Bếp trưởng" name="group_chef" context="{'group_by': 'user_id'}"/>
+                    <filter string="Ngày kế hoạch" name="group_date" context="{'group_by': 'date_planned:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_pizza_production_order" model="ir.actions.act_window">
+        <field name="name">Sản xuất Pizza</field>
+        <field name="res_model">pizza.production.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo lệnh sản xuất Pizza đầu tiên!
+            </p>
+        </field>
+    </record>
+</odoo>

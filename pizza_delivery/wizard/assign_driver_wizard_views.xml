@@ -1,0 +1,29 @@
+<odoo>
+    <record id="view_assign_driver_wizard" model="ir.ui.view">
+        <field name="name">assign.driver.wizard.form</field>
+        <field name="model">pizza.assign.driver.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Điều phối đơn hàng">
+                <group>
+                    <!-- 1. Trường ẩn chứa danh sách tài xế hợp lệ -->
+                    <field name="available_driver_ids" invisible="1"/>
+                    
+                    <!-- 2. Ô chọn tài xế: Chỉ hiện những người trong danh sách trên -->
+                    <field name="driver_id" 
+                           widget="selection" 
+                           domain="[('id', 'in', available_driver_ids)]"
+                           placeholder="Chỉ hiện tài xế thuộc tuyến đường này..."/>
+                           
+                    <field name="delivery_id" invisible="1"/>
+                </group>
+                
+                <field name="note" placeholder="Ví dụ: Khách khó tính, nhớ gọi trước..."/>
+                
+                <footer>
+                    <button name="action_confirm_assign" string="Xác nhận Điều phối" type="object" class="btn-primary"/>
+                    <button string="Hủy" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

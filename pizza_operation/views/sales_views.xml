@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========================================================= -->
+    <!-- 1. FORM VIEW (Giao diện chi tiết)                         -->
+    <!-- ========================================================= -->
+    <record id="view_pizza_sales_form" model="ir.ui.view">
+        <field name="name">pizza.sales.order.form</field>
+        <field name="model">pizza.sales.order</field>
+        <field name="arch" type="xml">
+            <form string="Đơn bán hàng Pizza">
+                <header>
+                    <!-- Ai cũng được bấm kiểm tra kho và tạo đơn -->
+                    <button name="action_check_stock" string="Kiểm tra tồn kho" type="object" class="oe_highlight" invisible="state != 'draft'" data-hotkey="c"/>
+                    
+                    <button name="action_request_production" string="Yêu cầu Sản xuất gấp" type="object" class="btn-warning" invisible="state not in ('draft', 'waiting')"/>
+                    
+                    <button name="action_create_backorder" string="Khách chờ (Backorder)" type="object" invisible="state != 'draft'" class="btn-secondary"/>
+                    
+                    <!-- Nhân viên được phép thanh toán/xác nhận đơn -->
+                    <button name="action_payment" string="Xác nhận &amp; Thanh toán" type="object" class="oe_highlight" invisible="state != 'checked'" data-hotkey="p"/>
+                    
+                    <!-- Nhân viên được phép giao lại nếu shipper thất bại -->
+                    <button name="action_retry_delivery" string="🔄 Giao lại (Thử lại)" type="object" class="btn-primary" invisible="state != 'fail'"/>
+                    
+                    <!-- [PHÂN QUYỀN] Chỉ QUẢN LÝ mới được Hoàn tiền / Hủy đơn -->
+                    <button name="action_refund" 
+                            string="Hoàn tiền / Hủy đơn" 
+                            type="object" 
+                            class="btn-danger" 
+                            invisible="state not in ('done', 'fail')" 
+                            groups="pizza_operation.group_pizza_manager"
+                            confirm="CẢNH BÁO: Bạn đang thực hiện Hủy đơn/Hoàn tiền. Bạn có chắc chắn không?"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,checked,delivering,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Mã đơn hàng"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông tin chung">
+                            <field name="customer_id" widget="res_partner_many2one" context="{'show_address': 1}" options='{"always_reload": True}'/>
+                            <field name="date_order"/>
+                            <field name="order_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="delivery_address" invisible="order_type != 'delivery'" required="order_type == 'delivery'" placeholder="Số nhà, Tên đường..."/>
+                            <field name="delivery_priority" widget="priority" invisible="order_type != 'delivery'"/>
+                        </group>
+                        <group string="Thanh toán">
+                            <!-- [PHÂN QUYỀN] Chỉ QUẢN LÝ mới thấy và sửa được Kho hàng -->
+                            <field name="warehouse_id" groups="pizza_operation.group_pizza_manager"/>
+                            
+                            <field name="payment_method" widget="radio" invisible="order_type != 'delivery'" required="order_type == 'delivery'"/>
+                            
+                            <!-- Tổng tiền nổi bật -->
+                            <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}" style="font-size: 2em; font-weight: bold; color: #28a745;"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Danh sách món ăn">
+                            <!-- [PHÂN QUYỀN] Khi đơn đã xong hoặc hủy, khóa không cho sửa -->
+                            <field name="line_ids" readonly="state in ('done', 'cancel', 'refund')">
+                                <list editable="bottom">
+                                    <field name="product_id" widget="many2one_avatar"/>
+                                    
+                                    <field name="qty_available" decoration-danger="qty_available &lt; qty" decoration-success="qty_available &gt;= qty"/>
+                                    
+                                    <field name="qty" sum="Tổng số lượng"/>
+                                    
+                                    <!-- Cột trả hàng chỉ hiện khi cần thiết -->
+                                    <field name="qty_to_refund" string="SL Trả" column_invisible="parent.state != 'done'" decoration-danger="1"/>
+                                    
+                                    <!-- Giá tiền chỉ đọc với nhân viên (tránh sửa giá gian lận), Quản lý được sửa -->
+                                    <field name="price_unit" widget="monetary" readonly="1" groups="!pizza_operation.group_pizza_manager"/>
+                                    <field name="price_unit" widget="monetary" groups="pizza_operation.group_pizza_manager"/>
+                                    
+                                    <field name="subtotal" widget="monetary" sum="Tổng cộng" decoration-bf="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- 2. LIST VIEW                                              -->
+    <!-- ========================================================= -->
+    <record id="view_pizza_sales_list" model="ir.ui.view">
+        <field name="name">pizza.sales.order.list</field>
+        <field name="model">pizza.sales.order</field>
+        <field name="arch" type="xml">
+            <list string="Đơn hàng" decoration-muted="state == 'cancel'" decoration-info="state == 'draft'" decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="customer_id" widget="many2one_avatar"/>
+                <field name="order_type" widget="badge" decoration-info="order_type == 'delivery'"/>
+                <field name="payment_method" optional="show"/>
+                <field name="amount_total" sum="Doanh thu" widget="monetary" decoration-bf="1"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'checked'" 
+                       decoration-warning="state == 'delivering'" 
+                       decoration-success="state == 'done'"
+                       decoration-danger="state in ('fail', 'refund')"/> 
+            </list>
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- 3. SEARCH VIEW                                            -->
+    <!-- ========================================================= -->
+    <record id="view_pizza_sales_search" model="ir.ui.view">
+        <field name="name">pizza.sales.order.search</field>
+        <field name="model">pizza.sales.order</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm Đơn Pizza">
+                <field name="name" string="Mã đơn / Khách hàng" filter_domain="['|', ('name', 'ilike', self), ('customer_id', 'ilike', self)]"/>
+                <field name="customer_id"/>
+                <field name="delivery_address" string="Địa chỉ giao"/>
+                <field name="line_ids" string="Sản phẩm" filter_domain="[('line_ids.product_id', 'ilike', self)]"/>
+
+                <separator/>
+                <filter string="Đơn giao đi (Delivery)" name="type_delivery" domain="[('order_type', '=', 'delivery')]"/>
+                <filter string="Ăn tại quán" name="type_dinein" domain="[('order_type', '=', 'dine_in')]"/>
+                
+                <separator/>
+                <filter string="Đang giao hàng" name="state_delivering" domain="[('state', '=', 'delivering')]"/>
+                <filter string="⚠️ Giao thất bại" name="state_fail" domain="[('state', '=', 'fail')]"/>
+                
+                <separator/>
+                <filter string="Hôm nay" name="today" domain="[('date_order', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Khách hàng" name="group_customer" context="{'group_by': 'customer_id'}"/>
+                    <filter string="Loại đơn" name="group_type" context="{'group_by': 'order_type'}"/>
+                    <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Ngày đặt" name="group_date" context="{'group_by': 'date_order:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- 4. ACTION                                                 -->
+    <!-- ========================================================= -->
+    <record id="action_pizza_sales_order" model="ir.actions.act_window">
+        <field name="name">Bán hàng (POS)</field>
+        <field name="res_model">pizza.sales.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo đơn bán hàng Pizza mới!
+            </p>
+        </field>
+    </record>
+</odoo>

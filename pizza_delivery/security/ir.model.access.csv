@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pizza_delivery_order_driver,pizza.delivery.order.driver,model_pizza_delivery_order,group_pizza_driver,1,1,0,0
+access_pizza_delivery_order_manager,pizza.delivery.order.manager,model_pizza_delivery_order,group_pizza_delivery_manager,1,1,1,1
+access_pizza_driver_read_all,pizza.driver.read.all,model_pizza_driver,base.group_user,1,0,0,0
+access_pizza_driver_manager,pizza.driver.manager,model_pizza_driver,group_pizza_delivery_manager,1,1,1,1
+access_pizza_route_user,pizza.route.user,model_pizza_delivery_route,base.group_user,1,0,0,0
+access_pizza_route_manager,pizza.route.manager,model_pizza_delivery_route,group_pizza_delivery_manager,1,1,1,1
+access_pizza_assign_driver_wizard,pizza.assign.driver.wizard,model_pizza_assign_driver_wizard,base.group_user,1,1,1,1
+access_pizza_driver_leave_user,pizza.driver.leave.user,model_pizza_driver_leave_request,base.group_user,1,1,1,0
+access_pizza_driver_leave_manager,pizza.driver.leave.manager,model_pizza_driver_leave_request,group_pizza_delivery_manager,1,1,1,1

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- [QUAN TRỌNG] Đổi noupdate="1" thành "0" để Odoo cập nhật lại Rule mới này -->
+    <data noupdate="0">
+        
+        <!-- 1. ĐỊNH NGHĨA CATEGORY -->
+        <record id="module_category_pizza_delivery" model="ir.module.category">
+            <field name="name">Pizza Delivery</field>
+            <field name="description">Phân quyền module Giao vận</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- 2. NHÓM TÀI XẾ (USER) -->
+        <record id="group_pizza_driver" model="res.groups">
+            <field name="name">Tài xế (Driver)</field>
+            <field name="category_id" ref="module_category_pizza_delivery"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- 3. NHÓM QUẢN LÝ (MANAGER) -->
+        <record id="group_pizza_delivery_manager" model="res.groups">
+            <field name="name">Quản lý Giao vận</field>
+            <field name="category_id" ref="module_category_pizza_delivery"/>
+            <field name="implied_ids" eval="[(4, ref('group_pizza_driver'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- 4. RECORD RULE: TÀI XẾ -->
+        <record id="rule_pizza_delivery_order_driver" model="ir.rule">
+            <field name="name">Driver sees own orders OR unassigned</field>
+            <field name="model_id" ref="model_pizza_delivery_order"/>
+            
+            <!-- 
+                LOGIC FIX: Sử dụng user.id thay vì user.partner_id.id để chính xác hơn
+                Driver thấy: Đơn chưa ai nhận (False) HOẶC Đơn gán cho chính mình (user.id)
+            -->
+            <field name="domain_force">['|', ('driver_id', '=', False), ('driver_id', '=', user.id)]</field>
+            
+            <field name="groups" eval="[(4, ref('group_pizza_driver'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/> <!-- Cần Write để bấm nhận đơn -->
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- 5. RECORD RULE: QUẢN LÝ (Thấy hết) -->
+        <record id="rule_pizza_delivery_order_manager" model="ir.rule">
+            <field name="name">Manager sees all orders</field>
+            <field name="model_id" ref="model_pizza_delivery_order"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_pizza_delivery_manager'))]"/>
+        </record>
+    </data>
+</odoo>

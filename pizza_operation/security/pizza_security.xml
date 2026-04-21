@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- 1. Tạo Danh mục phân quyền (Category) -->
+        <record model="ir.module.category" id="module_category_pizza">
+            <field name="name">Quản lý Pizza</field>
+            <field name="description">Phân quyền cho quy trình Pizza (Bếp, Kho, Sales)</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- 2. Nhóm Nhân viên (User) -->
+        <!-- Quyền: Tạo yêu cầu, Bán hàng, Nấu bánh (nhưng không được duyệt) -->
+        <record id="group_pizza_user" model="res.groups">
+            <field name="name">Nhân viên (Bếp/Sales/Kho)</field>
+            <field name="category_id" ref="module_category_pizza"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- 3. Nhóm Quản lý (Manager) -->
+        <!-- Quyền: Phê duyệt, Xóa, Cấu hình, Xem báo cáo -->
+        <record id="group_pizza_manager" model="res.groups">
+            <field name="name">Quản lý (Cửa hàng trưởng/Bếp trưởng/Kho)</field>
+            <field name="category_id" ref="module_category_pizza"/>
+            <!-- Quản lý bao gồm quyền của Nhân viên -->
+            <field name="implied_ids" eval="[(4, ref('group_pizza_user'))]"/>
+            <!-- Thêm quyền quản lý kho và sản xuất gốc của Odoo nếu cần -->
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+</odoo>

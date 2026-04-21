@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================== -->
+    <!-- MENU CẤP 1: ỨNG DỤNG CHÍNH     -->
+    <!-- ============================== -->
+    <menuitem id="menu_pizza_root" 
+              name="Pizza Operations" 
+              web_icon="pizza_operation,static/description/icon.png"
+              sequence="1"/>
+
+    <!-- ============================== -->
+    <!-- 1. NHẬP NGUYÊN LIỆU (PR)       -->
+    <!-- ============================== -->
+    <menuitem id="menu_procurement" 
+              name="Nhập nguyên liệu" 
+              parent="menu_pizza_root" 
+              sequence="10"/>
+              
+    <menuitem id="menu_procurement_request" 
+              name="Yêu cầu mua hàng" 
+              parent="menu_procurement" 
+              action="action_pizza_procurement_request" 
+              sequence="1"/>
+
+    <!-- [MỚI] Menu Nhà cung cấp -->
+    <menuitem id="menu_pizza_vendor"
+              name="Nhà cung cấp"
+              parent="menu_procurement"
+              action="action_pizza_vendor_list"
+              sequence="2"/>
+
+    <!-- ============================== -->
+    <!-- 2. KHO & VỊ TRÍ (STORAGE)      -->
+    <!-- ============================== -->
+    <menuitem id="menu_storage" 
+              name="Kho &amp; Vị trí" 
+              parent="menu_pizza_root" 
+              sequence="20"/>
+              
+    <menuitem id="menu_storage_ingredients" 
+              name="Xem Tồn kho" 
+              parent="menu_storage" 
+              action="stock.action_product_stock_view" 
+              sequence="1"/>
+              
+    <!-- [GỢI Ý THÊM] Menu Sản phẩm để tạo mới Cà chua, Bột... -->
+    <menuitem id="menu_storage_products"
+              name="Sản phẩm / Nguyên liệu"
+              parent="menu_storage"
+              action="stock.product_template_action_product"
+              sequence="2"/>
+
+    <!-- ============================== -->
+    <!-- 3. SẢN XUẤT (PRODUCTION)       -->
+    <!-- ============================== -->
+    <menuitem id="menu_production" 
+              name="Sản xuất Pizza" 
+              parent="menu_pizza_root" 
+              sequence="30"/>
+              
+    <menuitem id="menu_production_order" 
+              name="Lệnh sản xuất" 
+              parent="menu_production" 
+              action="action_pizza_production_order" 
+              sequence="1"/>
+
+    <!-- [MỚI] Menu Công thức BOM (Rất quan trọng) -->
+    <menuitem id="menu_pizza_bom" 
+              name="Công thức (BOM)" 
+              parent="menu_production" 
+              action="mrp.mrp_bom_form_action" 
+              sequence="2"/>
+
+    <!-- ============================== -->
+    <!-- 4. BÁN HÀNG (SALES)            -->
+    <!-- ============================== -->
+    <menuitem id="menu_sales" 
+              name="Bán hàng" 
+              parent="menu_pizza_root" 
+              sequence="35"/>
+              
+    <menuitem id="menu_sales_order" 
+              name="Đơn hàng Pizza" 
+              parent="menu_sales" 
+              action="action_pizza_sales_order" 
+              sequence="1"/>
+
+    <!-- ============================== -->
+    <!-- 5. KIỂM SOÁT & HỦY (SCRAP)     -->
+    <!-- ============================== -->
+    <menuitem id="menu_quality" 
+              name="Kiểm soát &amp; Hủy" 
+              parent="menu_pizza_root" 
+              sequence="40"/>
+              
+    <menuitem id="menu_scrap_record" 
+              name="Nhật ký hủy hàng" 
+              parent="menu_quality" 
+              action="action_pizza_scrap" 
+              sequence="1"/>
+</odoo>

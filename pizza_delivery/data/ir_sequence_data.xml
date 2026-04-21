@@ -1,0 +1,20 @@
+<odoo>
+    <record id="seq_pizza_delivery_order" model="ir.sequence">
+        <field name="name">Pizza Delivery Sequence</field>
+        <field name="code">pizza.delivery.order</field>
+        <field name="prefix">SHIP/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <data noupdate="1">
+        <!-- Mã tự động cho Phiếu xin nghỉ -->
+        <record id="seq_pizza_driver_leave" model="ir.sequence">
+            <field name="name">Pizza Driver Leave Request</field>
+            <field name="code">pizza.driver.leave</field>
+            <field name="prefix">LEAVE/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

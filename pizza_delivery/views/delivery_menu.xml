@@ -1,0 +1,48 @@
+<odoo>
+    <!-- 1. Menu Cấp 1 (Root) -->
+    <menuitem id="menu_pizza_delivery_root" 
+              name="Giao Vận (Delivery)" 
+              web_icon="pizza_delivery,static/description/icon.png" 
+              sequence="20"/>
+
+    <!-- 2. Menu Cấp 2: Điều phối -->
+    <menuitem id="menu_delivery_operations" 
+              name="Điều phối đơn hàng" 
+              parent="menu_pizza_delivery_root" 
+              sequence="1"/>
+
+    <!-- Menu Item: Tất cả đơn -->
+    <menuitem id="menu_action_delivery_order" 
+              name="Phiếu giao hàng" 
+              parent="menu_delivery_operations" 
+              action="action_pizza_delivery" 
+              sequence="1"/>
+
+    <!-- 3. Menu Cấp 2: Cấu hình -->
+    <menuitem id="menu_delivery_config" 
+              name="Cấu hình &amp; Tài xế" 
+              parent="menu_pizza_delivery_root" 
+              sequence="10"/>
+
+    <menuitem id="menu_action_driver" 
+              name="Danh sách Tài xế" 
+              parent="menu_delivery_config" 
+              action="action_pizza_driver" 
+              sequence="1"/>
+
+    <!-- ============================================= -->
+    <!-- Action Route (Dùng list,form) -->
+    <record id="action_pizza_route" model="ir.actions.act_window">
+        <field name="name">Tuyến đường</field>
+        <field name="res_model">pizza.delivery.route</field>
+        <field name="view_mode">list,form</field> 
+    </record>
+
+    <!-- Menu Route -->
+    <menuitem id="menu_action_route" 
+              name="Tuyến đường (Routes)" 
+              parent="menu_delivery_config" 
+              action="action_pizza_route" 
+              sequence="2"/>
+              
+</odoo>
