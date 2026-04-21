@@ -1,20 +1,23 @@
-Hệ thống ERP tích hợp cho ngành Pizza (Odoo 18)
-Một giải pháp doanh nghiệp chuyên nghiệp toàn diện dành cho các doanh nghiệp F&B, quản lý toàn bộ vòng đời từ đầu đến cuối.
-Giải pháp then chốt
-Sản xuất theo danh mục vật liệu (BoM):Quy trình sản xuất tự động dựa trên định mức nguyên vật liệu (BoM), bao gồm tiêu thụ nguyên liệu, kiểm tra chất lượng và quản lý phế liệu.
-Quản lý tồn kho thông minh (FEFO):Quản lý kho hàng tiên tiến sử dụngHết hạn trước, xuất trướcHệ thống logic với cảnh báo hạn sử dụng theo thời gian thực để đảm bảo an toàn thực phẩm.
-Hậu cần & PoD:Hệ thống định tuyến tự động cho việc điều phối tài xế. Tương thích với thiết bị di động.Bằng chứng giao hàng (PoD)Có tính năng chữ ký điện tử và xác minh ảnh.
-Trí tuệ dữ liệu:Hiệu suất caoChế độ xem SQLDùng để báo cáo liên mô-đun về Định giá hàng tồn kho, Xu hướng bán hàng và Đối chiếu tài chính (COD).
-Bộ công nghệ
-Khung:Odoo 18 (Phiên bản mới nhất)
-Ngôn ngữ:Python 3.10 trở lên
-Cơ sở dữ liệu:PostgreSQL (Các chế độ xem SQL nâng cao)
-Giao diện người dùng/Trải nghiệm người dùng:XML (QWeb), JavaScript, TailwindCSS
-Cài đặt
-Sao chép kho lưu trữ này vào thư mục Odoo của bạn.tiện ích bổ sung tùy chỉnhthư mục.
-Yêu cầu lắp đặt:
-code
-Bash
-pip install -r requirements.txt
-Cập nhật `od của bạnodoo.confvới đường dẫn tiện ích bổ sung mới.
-Khởi động lại máy chủ Odoo và cài đặt mô-đun từ menu Ứng dụng.
+# Integrated Pizza ERP System (Odoo 18)
+
+Giải pháp quản trị doanh nghiệp toàn diện (End-to-End) dành cho lĩnh vực F&B, quản lý toàn bộ chuỗi cung ứng từ khâu nhập nguyên liệu đến sản xuất và giao hàng cuối (Last-mile delivery).
+
+## Giải pháp trọng tâm
+
+*   **Sản xuất dựa trên định mức (BoM):** Quy trình sản xuất tự động hóa dựa trên định mức nguyên vật liệu (Bill of Materials), tích hợp kiểm tra chất lượng (QC) và quản lý phế phẩm/hỏng hóc (Scrap).
+*   **Quản lý kho thông minh (FEFO):** Hệ thống quản trị kho tiên tiến áp dụng quy tắc **First-Expired-First-Out** (Hết hạn trước - Xuất trước) kèm cảnh báo hạn sử dụng theo thời gian thực.
+*   **Vận hành Giao nhận & PoD:** Tự động hóa khâu điều phối tài xế theo tuyến đường. Ứng dụng xác thực giao hàng **Proof of Delivery (PoD)** tích hợp chữ ký số và hình ảnh thực tế.
+*   **Phân tích dữ liệu chuyên sâu:** Thiết kế các **SQL Views** hiệu suất cao để trích xuất báo cáo đa chiều về Định giá tồn kho, Xu hướng bán hàng và Đối soát tài chính (COD).
+
+## Bộ công nghệ 
+
+*   **Framework:** Odoo 18 
+*   **Language:** Python, XML 
+*   **Database:** PostgreSQL
+
+## Hướng dẫn cài đặt
+
+1. Sao chép thư mục dự án vào thư mục `custom_addons` trong bộ mã nguồn Odoo của bạn.
+2. Cài đặt các thư viện cần thiết:
+   ```bash
+   pip install -r requirements.txt
