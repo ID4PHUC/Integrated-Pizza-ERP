@@ -43,7 +43,7 @@ Thông qua BPMN, các bên liên quan sẽ đồng nhất hơn với nhau trong 
 ## Sơ đồ BPMN_Module quản lý đội ngũ giao hàng Pizza
 <img width="915" height="421" alt="image" src="https://github.com/user-attachments/assets/e52c8f82-3634-43e4-be9a-c144b80f4845" />
 
-##Quan hệ giữa các bảng
+## Quan hệ giữa các bảng
 Hệ thống được thiết kế dựa trên mô hình quan hệ (Relational Database). Dưới đây là mô tả các mối quan hệ chính thể hiện trong sơ đồ ERD:
 ## Nhóm Mua hàng 
 •	pizza_procurement_request (1) --- (N) pizza_procurement_line: Một phiếu yêu cầu chứa nhiều dòng chi tiết nguyên liệu. Đây là quan hệ cha-con (Composition), nếu phiếu bị xóa, các dòng chi tiết cũng bị xóa theo.
