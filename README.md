@@ -48,25 +48,25 @@ Thông qua BPMN, các bên liên quan sẽ đồng nhất hơn với nhau trong 
 
 Hệ thống được thiết kế dựa trên mô hình quan hệ (Relational Database). Dưới đây là mô tả các mối quan hệ chính thể hiện trong sơ đồ ERD:
 
-### 📥 Nhóm Mua hàng 
+### Nhóm Mua hàng 
 - **pizza_procurement_request (1) --- (N) pizza_procurement_line**: Một phiếu yêu cầu chứa nhiều dòng chi tiết nguyên liệu. Đây là quan hệ cha-con (Composition), nếu phiếu bị xóa, các dòng chi tiết cũng bị xóa theo.
 - **res_partner (1) --- (N) pizza_procurement_request**: Một nhà cung cấp có thể nhận nhiều phiếu yêu cầu mua hàng khác nhau.
 
-### 🍕 Nhóm Sản xuất 
+### Nhóm Sản xuất 
 - **pizza_production_order (1) --- (N) pizza_production_line**: Một lệnh sản xuất bao gồm nhiều dòng nguyên liệu tiêu hao (Lấy từ BOM).
 - **pizza_production_order (N) --- (1) product_product**: Nhiều lệnh sản xuất có thể cùng làm ra một loại Pizza.
 - **pizza_production_order (1) --- (N) pizza_scrap_record**: Một lệnh sản xuất có thể phát sinh nhiều biên bản hủy hàng (do cháy, hỏng).
 
-### 🛒 Nhóm Bán hàng 
+### Nhóm Bán hàng 
 - **pizza_sales_order (1) --- (N) pizza_sales_line**: Một đơn hàng bán bao gồm nhiều món ăn chi tiết.
 - **res_partner (1) --- (N) pizza_sales_order**: Một khách hàng có thể thực hiện nhiều đơn đặt hàng.
 
-### 📦 Nhóm Kho & Sản phẩm 
+### Nhóm Kho & Sản phẩm 
 - **product_template (1) --- (N) product_product**: Một mẫu sản phẩm (Template) có thể có nhiều biến thể (Variant).
 - **product_product (1) --- (N) stock_lot**: Một sản phẩm được quản lý theo nhiều Lô hàng khác nhau để theo dõi hạn sử dụng riêng biệt.
 - **product_product (1) --- (N) [All Line Tables]**: Sản phẩm là trung tâm, liên kết (1-N) với tất cả các bảng chi tiết (Mua, Bán, Sản xuất, Hủy) để định danh đối tượng đang được xử lý.
 
-### 🛵 Nhóm Giao vận & Logistics (Delivery)
+### Nhóm Giao vận & Logistics (Delivery)
 - **pizza_sales_order (1) --- (N) pizza_delivery_order**: Đây là mối quan hệ cầu nối giữa Bán hàng và Giao vận. Một đơn bán hàng có thể phát sinh nhiều phiếu giao hàng (ví dụ: Lần 1 giao thất bại, tạo phiếu lần 2 để giao lại). Tuy nhiên, thông thường là quan hệ 1-1.
 - **pizza_driver (1) --- (N) pizza_delivery_order**: Một tài xế có thể thực hiện nhiều đơn giao hàng khác nhau theo thời gian (Lịch sử giao hàng). Mỗi phiếu giao hàng tại một thời điểm chỉ được gán cho 1 tài xế chịu trách nhiệm.
 - **pizza_delivery_route (1) --- (N) pizza_delivery_order**: Các đơn giao hàng được gom nhóm vào các Tuyến đường/Khu vực cụ thể để tiện cho việc điều phối.
