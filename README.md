@@ -80,80 +80,182 @@ Sơ đồ thực thể liên kết (ERD)
 Sơ đồ dưới đây thể hiện sự liên kết giữa các module thông qua các bảng trung tâm như product_product và res_partner.
 <img width="100%" alt="Sơ đồ ERD Tổng quát" src="https://github.com/user-attachments/assets/d66a4259-8017-49e9-ba1f-99a5753d17cd" />
 
-```mermaid
 erDiagram
-    %% Nhóm Đối tác & Tài xế
-    res_partner ||--o{ pizza_procurement_request : "Vendor"
-    res_partner ||--o{ pizza_sales_order : "Customer"
-    res_partner ||--|| pizza_driver : "User Profile"
+    %% ======================================================
+    %% 1. NHÓM ĐỐI TÁC VÀ TÀI XẾ (PARTNERS & DRIVERS)
+    %% ======================================================
+    res_partner ||--o{ pizza_procurement_request : "vendor_id"
+    res_partner ||--o{ pizza_sales_order : "customer_id"
+    res_partner ||--|| pizza_driver : "user_id"
 
-    %% Nhóm Sản phẩm & Kho
-    product_template ||--o{ product_product : "1:N"
-    product_product ||--o{ stock_lot : "Lô & Hạn dùng"
-    product_product ||--o{ pizza_procurement_line : "Nguyên liệu mua"
-    product_product ||--o{ pizza_production_line : "Nguyên liệu tiêu hao"
-    product_product ||--o{ pizza_sales_line : "Mặt hàng bán"
-    product_product ||--o{ pizza_production_order : "Thành phẩm"
-
-    %% Nhóm Mua hàng
-    pizza_procurement_request ||--o{ pizza_procurement_line : "1:N"
-
-    %% Nhóm Sản xuất
-    pizza_production_order ||--o{ pizza_production_line : "Chi tiết vật tư"
-    pizza_production_order ||--o{ pizza_scrap_record : "Biên bản hủy"
-    pizza_production_order }o--|| mrp_bom : "Công thức"
-
-    %% Nhóm Bán hàng & Giao vận
-    pizza_sales_order ||--o{ pizza_sales_line : "Chi tiết đơn"
-    pizza_sales_order ||--o{ pizza_delivery_order : "Phát sinh"
-    
-    pizza_delivery_order }o--|| pizza_driver : "Tài xế nhận"
-    pizza_delivery_order }o--|| pizza_delivery_route : "Thuộc tuyến"
-    
-    pizza_driver ||--o{ pizza_driver_leave_request : "Xin nghỉ"
-    pizza_driver }|..|{ pizza_delivery_route : "Phụ trách vùng"
-
-    %% Chi tiết các bảng (Attributes)
     res_partner {
-        int id PK
+        integer id PK
         varchar name
         boolean supplier_rank
         boolean customer_rank
     }
 
-    product_product {
-        int id PK
+    pizza_driver ||--o{ pizza_delivery_order : "driver_id"
+    pizza_driver ||--o{ pizza_driver_leave_request : "driver_id"
+    pizza_driver }|..|{ pizza_delivery_route_rel : "rel_id"
+
+    pizza_driver {
+        integer id PK
         varchar name
-        varchar default_code
-        int template_id FK
+        integer partner_id FK
+        integer vehicle_id
+        varchar license_plate
+        varchar state "available, busy, offline"
     }
 
-    pizza_production_order {
-        int id PK
+    pizza_driver_leave_request {
+        integer id PK
         varchar name
-        int product_id FK "Thành phẩm"
-        double qty_producing
+        integer driver_id FK
+        date date_from
+        date date_to
+        text reason
         varchar state
     }
 
+    %% ======================================================
+    %% 2. NHÓM SẢN PHẨM VÀ KHO (PRODUCTS & STOCK)
+    %% ======================================================
+    product_template ||--o{ product_product : "1:N"
+    product_product ||--o{ stock_lot : "1:N (lot tracking)"
+    product_product ||--o{ pizza_procurement_line : "product_id"
+    product_product ||--o{ pizza_production_line : "raw_material_id"
+    product_product ||--o{ pizza_production_order : "finished_good_id"
+    product_product ||--o{ pizza_sales_line : "product_id"
+    product_product ||--o{ pizza_scrap_record : "product_id"
+
+    product_template {
+        integer id PK
+        varchar name
+        varchar storage_category "dry, cool, frozen"
+        boolean check_expiry
+        integer shelf_life "Total days"
+        timestamp inspection_date
+    }
+
+    product_product {
+        integer id PK
+        integer product_tmpl_id FK
+        varchar default_code
+    }
+
+    stock_lot {
+        integer id PK
+        varchar name
+        integer product_id FK
+        timestamp expiration_date "Hạn dùng (Tự động)"
+    }
+
+    %% ======================================================
+    %% 3. NHÓM MUA HÀNG (PROCUREMENT)
+    %% ======================================================
+    pizza_procurement_request ||--o{ pizza_procurement_line : "1:N"
+
+    pizza_procurement_request {
+        integer id PK
+        varchar name "Mã phiếu"
+        integer vendor_id FK "NCC (res_partner)"
+        integer warehouse_id
+        date date_planned
+        varchar state
+    }
+
+    pizza_procurement_line {
+        integer id PK
+        integer request_id FK
+        integer product_id FK "Nguyên liệu"
+        double qty
+        varchar storage_category "Lưu kho"
+    }
+
+    %% ======================================================
+    %% 4. NHÓM SẢN XUẤT (PRODUCTION / MRP)
+    %% ======================================================
+    pizza_production_order ||--o{ pizza_production_line : "1:N"
+    pizza_production_order ||--o{ pizza_scrap_record : "1:N"
+    pizza_production_order }o--|| mrp_bom : "uses"
+
+    pizza_production_order {
+        integer id PK
+        varchar name
+        integer product_id FK "Thành phẩm"
+        integer bom_id FK "Công thức (mrp_bom)"
+        double qty_producing
+        integer location_src_id "Kho Nguyên liệu"
+        integer location_dest_id "Kho Thành phẩm"
+        varchar state
+    }
+
+    pizza_production_line {
+        integer id PK
+        integer production_id FK
+        integer product_id FK "Nguyên liệu tiêu hao"
+        double qty_needed
+    }
+
+    pizza_scrap_record {
+        integer id PK
+        integer production_id FK "Từ Lệnh SX nào"
+        integer product_id FK "Sản phẩm lỗi"
+        double qty
+        varchar reason "Lý do (Cháy/Hỏng...)"
+    }
+
+    mrp_bom {
+        integer id PK
+        varchar code
+    }
+
+    %% ======================================================
+    %% 5. NHÓM BÁN HÀNG VÀ GIAO VẬN (SALES & DELIVERY)
+    %% ======================================================
+    pizza_sales_order ||--o{ pizza_sales_line : "1:N"
+    pizza_sales_order ||--o{ pizza_delivery_order : "1:N (Tạo phiếu)"
+    pizza_delivery_route ||--o{ pizza_delivery_order : "route_id"
+    pizza_delivery_route }|..|{ pizza_delivery_route_rel : "rel_id"
+
     pizza_sales_order {
-        int id PK
-        int customer_id FK
-        varchar order_type "Dine-in/Delivery"
+        integer id PK
+        varchar name
+        integer customer_id FK "Khách (res_partner)"
+        varchar order_type "Dine-in / Delivery"
+        date date
         double amount_total
     }
 
-    pizza_delivery_order {
-        int id PK
-        int sales_order_id FK
-        int driver_id FK
-        int route_id FK
-        varchar state "Draft/Shipping/Done"
+    pizza_sales_line {
+        integer id PK
+        integer order_id FK
+        integer product_id FK "Món ăn"
+        double qty
     }
 
-    pizza_driver {
-        int id PK
-        int partner_id FK
-        varchar license_plate
-        varchar state "Available/Busy/Offline"
+    pizza_delivery_order {
+        integer id PK
+        varchar name "Mã vận đơn"
+        integer sales_order_id FK "Đơn gốc"
+        integer customer_id FK
+        integer driver_id FK "Tài xế"
+        integer route_id FK "Tuyến đường"
+        varchar address
+        double amount_cod "Tiền thu hộ"
+        varchar state "draft, delivering, done, fail"
+        integer priority
+    }
+
+    pizza_delivery_route {
+        integer id PK
+        varchar name "Tên vùng/tuyến"
+        varchar code
+        double estimated_shipping_fee
+    }
+
+    pizza_delivery_route_rel {
+        integer route_id FK
+        integer driver_id FK
     }
