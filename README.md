@@ -261,3 +261,40 @@ erDiagram
         integer route_id FK
         integer driver_id FK
     }
+```
+## Giao diện ứng dụng của Module quản lý vận hành _Nhập nguyên liệu
+
+<img width="915" height="488" alt="image" src="https://github.com/user-attachments/assets/9b7cc26c-e81c-4f83-98cc-1d91d5bceebc" />
+<img width="915" height="456" alt="image" src="https://github.com/user-attachments/assets/2b750abf-2e76-4910-ab5b-0b18113b237b" />
+<img width="915" height="510" alt="image" src="https://github.com/user-attachments/assets/ad4dd154-f390-4305-b821-35a0481eda87" />
+
+## Giao diện ứng dụng của Module quản lý vận hành _ Lưu kho & quản lý nguyên liệu
+
+<img width="915" height="482" alt="image" src="https://github.com/user-attachments/assets/f9f2fb79-7b05-48ea-b940-c47a24000882" />
+
+## Giao diện ứng dụng của Module quản lý vận hành _ Sản xuất pizza
+
+<img width="915" height="437" alt="image" src="https://github.com/user-attachments/assets/c70a9a1c-d8a6-494f-ab7b-b2ea5b6bb6e9" />
+
+<img width="915" height="467" alt="image" src="https://github.com/user-attachments/assets/5485821d-fbda-4a1a-9efe-40195d1766d0" />
+
+
+## Giao diện ứng dụng của Module quản lý vận hành _ Bán hàng pizza
+
+<img width="915" height="417" alt="image" src="https://github.com/user-attachments/assets/94d4c1d5-b9ee-4ece-8e0b-76fc951fd256" />
+
+<img width="915" height="461" alt="image" src="https://github.com/user-attachments/assets/609aeafa-af06-49ba-8b85-16c26e677426" />
+
+
+## Giao diện ứng dụng của Module quản lý vận hành _ Kiểm soát và hủy hàng
+
+<img width="915" height="421" alt="image" src="https://github.com/user-attachments/assets/9e6e6dc7-b2cb-4be5-8f43-f5f396348222" />
+
+
+## Giao diện ứng dụng của Module quản lý vận hành _ Báo cáo
+
+<img width="911" height="479" alt="image" src="https://github.com/user-attachments/assets/ea2565f9-c3dc-4bde-8295-cefacf510a5e" />
+
+
+
+
