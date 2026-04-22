@@ -79,54 +79,81 @@ Trong cơ sở dữ liệu, quan hệ này được hiện thực hóa bằng b�
 Sơ đồ thực thể liên kết (ERD)
 Sơ đồ dưới đây thể hiện sự liên kết giữa các module thông qua các bảng trung tâm như product_product và res_partner.
 <img width="100%" alt="Sơ đồ ERD Tổng quát" src="https://github.com/user-attachments/assets/d66a4259-8017-49e9-ba1f-99a5753d17cd" />
+
+
 erDiagram
     %% Nhóm Đối tác & Tài xế
-    RES_PARTNER ||--o{ PIZZA_PROCUREMENT_REQUEST : "vendor"
-    RES_PARTNER ||--o{ PIZZA_SALES_ORDER : "customer"
-    RES_PARTNER ||--|| PIZZA_DRIVER : "is_user"
-    
-    %% Nhóm Sản phẩm
-    PRODUCT_TEMPLATE ||--o{ PRODUCT_PRODUCT : "has_variants"
-    PRODUCT_PRODUCT ||--o{ STOCK_LOT : "managed_by"
-    PRODUCT_PRODUCT ||--o{ PIZZA_PROCUREMENT_LINE : "in_line"
-    PRODUCT_PRODUCT ||--o{ PIZZA_PRODUCTION_LINE : "consume"
-    PRODUCT_PRODUCT ||--o{ PIZZA_SALES_LINE : "sold_as"
-    PRODUCT_PRODUCT ||--o{ PIZZA_PRODUCTION_ORDER : "produces"
+    res_partner ||--o{ pizza_procurement_request : "Vendor"
+    res_partner ||--o{ pizza_sales_order : "Customer"
+    res_partner ||--|| pizza_driver : "User Profile"
+
+    %% Nhóm Sản phẩm & Kho
+    product_template ||--o{ product_product : "1:N"
+    product_product ||--o{ stock_lot : "Lô & Hạn dùng"
+    product_product ||--o{ pizza_procurement_line : "Nguyên liệu mua"
+    product_product ||--o{ pizza_production_line : "Nguyên liệu tiêu hao"
+    product_product ||--o{ pizza_sales_line : "Mặt hàng bán"
+    product_product ||--o{ pizza_production_order : "Thành phẩm"
 
     %% Nhóm Mua hàng
-    PIZZA_PROCUREMENT_REQUEST ||--o{ PIZZA_PROCUREMENT_LINE : "contains"
-    
+    pizza_procurement_request ||--o{ pizza_procurement_line : "1:N"
+
     %% Nhóm Sản xuất
-    PIZZA_PRODUCTION_ORDER ||--o{ PIZZA_PRODUCTION_LINE : "raw_materials"
-    PIZZA_PRODUCTION_ORDER ||--o{ PIZZA_SCRAP_RECORD : "scraps"
-    PIZZA_PRODUCTION_ORDER }o--|| MRP_BOM : "uses"
+    pizza_production_order ||--o{ pizza_production_line : "Chi tiết vật tư"
+    pizza_production_order ||--o{ pizza_scrap_record : "Biên bản hủy"
+    pizza_production_order }o--|| mrp_bom : "Công thức"
 
     %% Nhóm Bán hàng & Giao vận
-    PIZZA_SALES_ORDER ||--o{ PIZZA_SALES_LINE : "contains"
-    PIZZA_SALES_ORDER ||--o{ PIZZA_DELIVERY_ORDER : "triggers"
+    pizza_sales_order ||--o{ pizza_sales_line : "Chi tiết đơn"
+    pizza_sales_order ||--o{ pizza_delivery_order : "Phát sinh"
     
-    PIZZA_DELIVERY_ORDER }o--|| PIZZA_DRIVER : "assigned_to"
-    PIZZA_DELIVERY_ORDER }o--|| PIZZA_DELIVERY_ROUTE : "follows"
+    pizza_delivery_order }o--|| pizza_driver : "Tài xế nhận"
+    pizza_delivery_order }o--|| pizza_delivery_route : "Thuộc tuyến"
     
-    PIZZA_DRIVER ||--o{ PIZZA_DRIVER_LEAVE_REQUEST : "requests"
-    PIZZA_DRIVER }|..|{ PIZZA_DELIVERY_ROUTE : "covers_area"
+    pizza_driver ||--o{ pizza_driver_leave_request : "Xin nghỉ"
+    pizza_driver }|..|{ pizza_delivery_route : "Phụ trách vùng"
 
-    %% Định nghĩa các trường dữ liệu (Ví dụ mẫu các bảng chính)
-    RES_PARTNER {
+    %% Chi tiết các bảng (Attributes)
+    res_partner {
         int id PK
-        string name
+        varchar name
         boolean supplier_rank
         boolean customer_rank
     }
-    PRODUCT_PRODUCT {
+
+    product_product {
         int id PK
-        string default_code
+        varchar name
+        varchar default_code
         int template_id FK
     }
-    PIZZA_DELIVERY_ORDER {
+
+    pizza_production_order {
         int id PK
-        int sale_id FK
-        int driver_id FK
-        string state "draft/delivering/done"
+        varchar name
+        int product_id FK "Thành phẩm"
+        double qty_producing
+        varchar state
     }
 
+    pizza_sales_order {
+        int id PK
+        int customer_id FK
+        varchar order_type "Dine-in/Delivery"
+        double amount_total
+    }
+
+    pizza_delivery_order {
+        int id PK
+        int sales_order_id FK
+        int driver_id FK
+        int route_id FK
+        varchar state "Draft/Shipping/Done"
+    }
+
+    pizza_driver {
+        int id PK
+        int partner_id FK
+        varchar license_plate
+        varchar state "Available/Busy/Offline"
+    }
