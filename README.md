@@ -43,37 +43,37 @@ Thông qua BPMN, các bên liên quan sẽ đồng nhất hơn với nhau trong 
 ## Sơ đồ BPMN_Module quản lý đội ngũ giao hàng Pizza
 <img width="915" height="421" alt="image" src="https://github.com/user-attachments/assets/e52c8f82-3634-43e4-be9a-c144b80f4845" />
 
-## Quan hệ giữa các bảng
+---
+## 🗄️ Quan hệ giữa các bảng
+
 Hệ thống được thiết kế dựa trên mô hình quan hệ (Relational Database). Dưới đây là mô tả các mối quan hệ chính thể hiện trong sơ đồ ERD:
-## Nhóm Mua hàng 
-•	pizza_procurement_request (1) --- (N) pizza_procurement_line: Một phiếu yêu cầu chứa nhiều dòng chi tiết nguyên liệu. Đây là quan hệ cha-con (Composition), nếu phiếu bị xóa, các dòng chi tiết cũng bị xóa theo.
-•	res_partner (1) --- (N) pizza_procurement_request: Một nhà cung cấp có thể nhận nhiều phiếu yêu cầu mua hàng khác nhau.
-## Nhóm Sản xuất 
-•	pizza_production_order (1) --- (N) pizza_production_line: Một lệnh sản xuất bao gồm nhiều dòng nguyên liệu tiêu hao (Lấy từ BOM).
-•	pizza_production_order (N) --- (1) product_product: Nhiều lệnh sản xuất có thể cùng làm ra một loại Pizza.
-•	pizza_production_order (1) --- (N) pizza_scrap_record: Một lệnh sản xuất có thể phát sinh nhiều biên bản hủy hàng (do cháy, hỏng).
-## Nhóm Bán hàng 
-•	pizza_sales_order (1) --- (N) pizza_sales_line: Một đơn hàng bán bao gồm nhiều món ăn chi tiết.
-•	res_partner (1) --- (N) pizza_sales_order: Một khách hàng có thể thực hiện nhiều đơn đặt hàng.
-## Nhóm Kho & Sản phẩm 
-•	product_template (1) --- (N) product_product: Một mẫu sản phẩm (Template) có thể có nhiều biến thể (Variant).
-•	product_product (1) --- (N) stock_lot: Một sản phẩm được quản lý theo nhiều Lô hàng khác nhau để theo dõi hạn sử dụng riêng biệt.
-•	product_product (1) --- (N) [All Line Tables]: Sản phẩm là trung tâm, liên kết (1-N) với tất cả các bảng chi tiết (Mua, Bán, Sản xuất, Hủy) để định danh đối tượng đang được xử lý.
 
-## Nhóm Giao vận & Logistics (Delivery):
-•	pizza_sales_order (1) --- (N) pizza_delivery_order: Đây là mối quan hệ cầu nối giữa Bán hàng và Giao vận.
+### 📥 Nhóm Mua hàng 
+- **pizza_procurement_request (1) --- (N) pizza_procurement_line**: Một phiếu yêu cầu chứa nhiều dòng chi tiết nguyên liệu. Đây là quan hệ cha-con (Composition), nếu phiếu bị xóa, các dòng chi tiết cũng bị xóa theo.
+- **res_partner (1) --- (N) pizza_procurement_request**: Một nhà cung cấp có thể nhận nhiều phiếu yêu cầu mua hàng khác nhau.
 
-Một đơn bán hàng có thể phát sinh nhiều phiếu giao hàng (ví dụ: Lần 1 giao thất bại, tạo phiếu lần 2 để giao lại). Tuy nhiên, thông thường là quan hệ 1-1.
-•	pizza_driver (1) --- (N) pizza_delivery_order: Một tài xế có thể thực hiện nhiều đơn giao hàng khác nhau theo thời gian (Lịch sử giao hàng).
+### 🍕 Nhóm Sản xuất 
+- **pizza_production_order (1) --- (N) pizza_production_line**: Một lệnh sản xuất bao gồm nhiều dòng nguyên liệu tiêu hao (Lấy từ BOM).
+- **pizza_production_order (N) --- (1) product_product**: Nhiều lệnh sản xuất có thể cùng làm ra một loại Pizza.
+- **pizza_production_order (1) --- (N) pizza_scrap_record**: Một lệnh sản xuất có thể phát sinh nhiều biên bản hủy hàng (do cháy, hỏng).
 
-Mỗi phiếu giao hàng tại một thời điểm chỉ được gán cho 1 tài xế chịu trách nhiệm.
-•	pizza_delivery_route (1) --- (N) pizza_delivery_order: Các đơn giao hàng được gom nhóm vào các Tuyến đường/Khu vực cụ thể để tiện cho việc điều phối.
-•	pizza_driver (N) --- (N) pizza_delivery_route: Đây là quan hệ Nhiều - Nhiều (Many-to-Many).
+### 🛒 Nhóm Bán hàng 
+- **pizza_sales_order (1) --- (N) pizza_sales_line**: Một đơn hàng bán bao gồm nhiều món ăn chi tiết.
+- **res_partner (1) --- (N) pizza_sales_order**: Một khách hàng có thể thực hiện nhiều đơn đặt hàng.
 
-Một tài xế có thể thông thạo và phụ trách nhiều tuyến đường (VD: Chạy cả Quận 1 và Quận 3).Một tuyến đường có thể có nhiều tài xế cùng hoạt động.
-Trong cơ sở dữ liệu, quan hệ này được hiện thực hóa bằng bảng trung gian pizza_delivery_route_pizza_driver_rel.
-•	res_partner (1) --- (1) pizza_driver: Mỗi hồ sơ tài xế được liên kết chặt chẽ với một res.partner (User hệ thống) để quản lý thông tin đăng nhập, số điện thoại và ảnh đại diện.
-•	pizza_driver (1) --- (N) pizza_driver_leave_request: Một tài xế có thể tạo nhiều phiếu yêu cầu nghỉ phép trong quá trình làm việc. Khi phiếu được duyệt (approved), trạng thái của tài xế sẽ tự động chuyển sang offline.
+### 📦 Nhóm Kho & Sản phẩm 
+- **product_template (1) --- (N) product_product**: Một mẫu sản phẩm (Template) có thể có nhiều biến thể (Variant).
+- **product_product (1) --- (N) stock_lot**: Một sản phẩm được quản lý theo nhiều Lô hàng khác nhau để theo dõi hạn sử dụng riêng biệt.
+- **product_product (1) --- (N) [All Line Tables]**: Sản phẩm là trung tâm, liên kết (1-N) với tất cả các bảng chi tiết (Mua, Bán, Sản xuất, Hủy) để định danh đối tượng đang được xử lý.
+
+### 🛵 Nhóm Giao vận & Logistics (Delivery)
+- **pizza_sales_order (1) --- (N) pizza_delivery_order**: Đây là mối quan hệ cầu nối giữa Bán hàng và Giao vận. Một đơn bán hàng có thể phát sinh nhiều phiếu giao hàng (ví dụ: Lần 1 giao thất bại, tạo phiếu lần 2 để giao lại). Tuy nhiên, thông thường là quan hệ 1-1.
+- **pizza_driver (1) --- (N) pizza_delivery_order**: Một tài xế có thể thực hiện nhiều đơn giao hàng khác nhau theo thời gian (Lịch sử giao hàng). Mỗi phiếu giao hàng tại một thời điểm chỉ được gán cho 1 tài xế chịu trách nhiệm.
+- **pizza_delivery_route (1) --- (N) pizza_delivery_order**: Các đơn giao hàng được gom nhóm vào các Tuyến đường/Khu vực cụ thể để tiện cho việc điều phối.
+- **pizza_driver (N) --- (N) pizza_delivery_route**: Đây là quan hệ Nhiều - Nhiều (Many-to-Many). Một tài xế có thể thông thạo và phụ trách nhiều tuyến đường (VD: Chạy cả Quận 1 và Quận 3). Một tuyến đường có thể có nhiều tài xế cùng hoạt động. Trong cơ sở dữ liệu, quan hệ này được hiện thực hóa bằng bảng trung gian `pizza_delivery_route_pizza_driver_rel`.
+- **res_partner (1) --- (1) pizza_driver**: Mỗi hồ sơ tài xế được liên kết chặt chẽ với một `res.partner` (User hệ thống) để quản lý thông tin đăng nhập, số điện thoại và ảnh đại diện.
+- **pizza_driver (1) --- (N) pizza_driver_leave_request**: Một tài xế có thể tạo nhiều phiếu yêu cầu nghỉ phép trong quá trình làm việc. Khi phiếu được duyệt (approved), trạng thái của tài xế sẽ tự động chuyển sang offline.
+---
 
 
 ## Sơ đồ thực thể liên kết (ERD)
