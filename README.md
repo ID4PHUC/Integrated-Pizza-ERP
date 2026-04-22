@@ -27,14 +27,19 @@ BPMN là một phương pháp biểu đồ luồng (Flow chart), tập hợp cá
 Thông qua BPMN, các bên liên quan sẽ đồng nhất hơn với nhau trong việc thiết kế và triển khai quy trình nghiệp vụ.
 ## Sơ đồ BPMN Module quản lý vận hành _Nhập nguyên liệu
 <img width="915" height="364" alt="image" src="https://github.com/user-attachments/assets/2e4cc876-ff64-4060-a97a-1cfe84a6a7e1" />
+
 ## Sơ đồ BPMN Module quản lý vận hành _Lưu kho & quản lý nguyên liệu
 <img width="915" height="831" alt="image" src="https://github.com/user-attachments/assets/4e89bcd4-f94f-4367-a569-c4e5294a69f9" />
+
 ## Sơ đồ BPMN Module quản lý vận hành _Sản xuất pizza
 <img width="915" height="482" alt="image" src="https://github.com/user-attachments/assets/0d602443-3245-43b3-bcde-2f029eff1305" />
+
 ## Sơ đồ BPMN Module quản lý vận hành _Bán hàng pizza
 <img width="915" height="417" alt="image" src="https://github.com/user-attachments/assets/83b96fcc-d8c1-4c3c-9ab9-58d22d8330e3" />
+
 ## Sơ đồ BPMN Module quản lý vận hành _Kiểm soát và hủy hàng 
 <img width="915" height="313" alt="image" src="https://github.com/user-attachments/assets/2f0a00c1-d8f2-4919-bb1a-5e7d4a4b886f" />
+
 ## Sơ đồ BPMN_Module quản lý đội ngũ giao hàng Pizza
 <img width="915" height="421" alt="image" src="https://github.com/user-attachments/assets/e52c8f82-3634-43e4-be9a-c144b80f4845" />
 
