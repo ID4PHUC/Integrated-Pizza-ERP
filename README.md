@@ -44,7 +44,7 @@ Thông qua BPMN, các bên liên quan sẽ đồng nhất hơn với nhau trong 
 <img width="915" height="421" alt="image" src="https://github.com/user-attachments/assets/e52c8f82-3634-43e4-be9a-c144b80f4845" />
 
 ---
-## 🗄️ Quan hệ giữa các bảng
+## Quan hệ giữa các bảng
 
 Hệ thống được thiết kế dựa trên mô hình quan hệ (Relational Database). Dưới đây là mô tả các mối quan hệ chính thể hiện trong sơ đồ ERD:
 
