@@ -79,5 +79,54 @@ Trong cơ sở dữ liệu, quan hệ này được hiện thực hóa bằng b�
 Sơ đồ thực thể liên kết (ERD)
 Sơ đồ dưới đây thể hiện sự liên kết giữa các module thông qua các bảng trung tâm như product_product và res_partner.
 <img width="100%" alt="Sơ đồ ERD Tổng quát" src="https://github.com/user-attachments/assets/d66a4259-8017-49e9-ba1f-99a5753d17cd" />
+erDiagram
+    %% Nhóm Đối tác & Tài xế
+    RES_PARTNER ||--o{ PIZZA_PROCUREMENT_REQUEST : "vendor"
+    RES_PARTNER ||--o{ PIZZA_SALES_ORDER : "customer"
+    RES_PARTNER ||--|| PIZZA_DRIVER : "is_user"
+    
+    %% Nhóm Sản phẩm
+    PRODUCT_TEMPLATE ||--o{ PRODUCT_PRODUCT : "has_variants"
+    PRODUCT_PRODUCT ||--o{ STOCK_LOT : "managed_by"
+    PRODUCT_PRODUCT ||--o{ PIZZA_PROCUREMENT_LINE : "in_line"
+    PRODUCT_PRODUCT ||--o{ PIZZA_PRODUCTION_LINE : "consume"
+    PRODUCT_PRODUCT ||--o{ PIZZA_SALES_LINE : "sold_as"
+    PRODUCT_PRODUCT ||--o{ PIZZA_PRODUCTION_ORDER : "produces"
 
+    %% Nhóm Mua hàng
+    PIZZA_PROCUREMENT_REQUEST ||--o{ PIZZA_PROCUREMENT_LINE : "contains"
+    
+    %% Nhóm Sản xuất
+    PIZZA_PRODUCTION_ORDER ||--o{ PIZZA_PRODUCTION_LINE : "raw_materials"
+    PIZZA_PRODUCTION_ORDER ||--o{ PIZZA_SCRAP_RECORD : "scraps"
+    PIZZA_PRODUCTION_ORDER }o--|| MRP_BOM : "uses"
+
+    %% Nhóm Bán hàng & Giao vận
+    PIZZA_SALES_ORDER ||--o{ PIZZA_SALES_LINE : "contains"
+    PIZZA_SALES_ORDER ||--o{ PIZZA_DELIVERY_ORDER : "triggers"
+    
+    PIZZA_DELIVERY_ORDER }o--|| PIZZA_DRIVER : "assigned_to"
+    PIZZA_DELIVERY_ORDER }o--|| PIZZA_DELIVERY_ROUTE : "follows"
+    
+    PIZZA_DRIVER ||--o{ PIZZA_DRIVER_LEAVE_REQUEST : "requests"
+    PIZZA_DRIVER }|..|{ PIZZA_DELIVERY_ROUTE : "covers_area"
+
+    %% Định nghĩa các trường dữ liệu (Ví dụ mẫu các bảng chính)
+    RES_PARTNER {
+        int id PK
+        string name
+        boolean supplier_rank
+        boolean customer_rank
+    }
+    PRODUCT_PRODUCT {
+        int id PK
+        string default_code
+        int template_id FK
+    }
+    PIZZA_DELIVERY_ORDER {
+        int id PK
+        int sale_id FK
+        int driver_id FK
+        string state "draft/delivering/done"
+    }
 
