@@ -76,7 +76,8 @@ Trong cơ sở dữ liệu, quan hệ này được hiện thực hóa bằng b�
 •	pizza_driver (1) --- (N) pizza_driver_leave_request: Một tài xế có thể tạo nhiều phiếu yêu cầu nghỉ phép trong quá trình làm việc. Khi phiếu được duyệt (approved), trạng thái của tài xế sẽ tự động chuyển sang offline.
 
 
-## Sơ đồ tổng quát ERD
-<img width="915" height="407" alt="image" src="https://github.com/user-attachments/assets/d66a4259-8017-49e9-ba1f-99a5753d17cd" />
+Sơ đồ thực thể liên kết (ERD)
+Sơ đồ dưới đây thể hiện sự liên kết giữa các module thông qua các bảng trung tâm như product_product và res_partner.
+<img width="100%" alt="Sơ đồ ERD Tổng quát" src="https://github.com/user-attachments/assets/d66a4259-8017-49e9-ba1f-99a5753d17cd" />
 
 
