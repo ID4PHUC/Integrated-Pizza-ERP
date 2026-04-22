@@ -262,6 +262,9 @@ erDiagram
         integer driver_id FK
     }
 ```
+## Giao diện 
+
+
 ## Giao diện ứng dụng của Module quản lý vận hành _Nhập nguyên liệu
 
 <img width="915" height="488" alt="image" src="https://github.com/user-attachments/assets/9b7cc26c-e81c-4f83-98cc-1d91d5bceebc" />
